@@ -1,14 +1,14 @@
 # SlotMachineDEMO - 各分支架構與自動化測試指南
 
-本專案改動自開源專案 https://github.com/slotopol/server （原為 Go 語言實作），將其重構至 .NET 10 (C#)，並透過 BDD 測試、自動化覆蓋率分析與不同資料庫架構模式，探討高併發下的效能、資料一致性與架構權衡。
+本專案改動自開源專案 https://github.com/slotopol/server （原為 Go 語言實作），將其重構至 .NET 10 (C#)
 
 ---
 
 ## 核心特色與架構決策
 
 ### 1. BDD 與 HTML 視覺化驗證（嚴格比對資料庫）
-- 採用 Gherkin 語法（SpecFlow / Reqnroll）撰寫行為驅動測試（BDD），並產出 HTML 視覺化報告。
-- 測試不僅驗證 HTTP API 回傳，更於每一步驟直接連線 MySQL，精確比對資料庫底層資料（包含 Users 錢包餘額、ClubData 水池與彩金池、Spinlogs 注單明細、Multlogs 比倍紀錄），確保記憶體運算與資料庫實體狀態完全一致。
+- 採用 Gherkin 語法BDD，並產出 HTML 程式碼覆蓋率報告。
+- 測試不僅驗證 HTTP API 回傳，更於每一步驟直接連線 MySQL，精確比對資料庫底層資料（包含 Users 錢包餘額、ClubData 水池與彩金池、Spinlogs 注單明細、Multlogs 比倍紀錄）
 - 點擊直接遊覽線上 HTML 報告：
   - [Gonzo's Quest Avalanche 連鎖掉落滿貫階梯視覺化 & Cascade 核心源碼剖析](https://htmlpreview.github.io/?https://github.com/DD898989/SlotMachineDEMO/blob/dbbasic/test/ServerMain.BDDTests/Features/GonzosQuestAvalanche.feature.html)
   - [MegaJack Slotopol 10 次指定下注模擬視覺化 (BDD Simulation)](https://htmlpreview.github.io/?https://github.com/DD898989/SlotMachineDEMO/blob/dbbasic/test/ServerMain.BDDTests/Features/SlotopolSimulation.feature.html)
