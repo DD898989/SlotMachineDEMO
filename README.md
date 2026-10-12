@@ -6,14 +6,20 @@
 
 ## 核心特色與架構決策
 
-### 1. BDD 與 HTML 視覺化驗證（嚴格比對資料庫）
-- 採用 Gherkin 語法BDD，並產出 HTML 程式碼覆蓋率報告。
-- 測試不僅驗證 HTTP API 回傳，更於每一步驟直接連線 MySQL，精確比對資料庫底層資料（包含 Users 錢包餘額、ClubData 水池與彩金池、Spinlogs 注單明細、Multlogs 比倍紀錄）
-- 點擊直接遊覽線上 HTML 報告：
+### 1. 遊戲邏輯與程式碼對應互動視覺化（快速上手引導）
+- 提供兩款經典遊戲的**全流程互動視覺化展示**，專門用於快速上手遊戲玩法規則、核心演算法以及底層程式碼與資料庫狀態的對應關係（非靜態測試報告）：
+  - **遊戲玩法與規則視覺化**：步進演示盤面滾輪、贏分線判定、掉落消除（Cascade / Avalanche）與階梯乘數機制。
+  - **核心業務源碼深度剖析**：各步驟皆對照底層 C# 核心演算法、資料結構轉換與領域邏輯實現。
+  - **資料庫狀態實時聯動**：直觀呈現下注扣款、派彩、水池彩金變動（ClubData）與注單明細寫入的對應關係。
+- 點擊直接開啟線上互動展示：
   - [Gonzo's Quest Avalanche 連鎖掉落滿貫階梯視覺化 & Cascade 核心源碼剖析](https://htmlpreview.github.io/?https://github.com/DD898989/SlotMachineDEMO/blob/dbbasic/test/ServerMain.BDDTests/Features/GonzosQuestAvalanche.feature.html)
   - [MegaJack Slotopol 10 次指定下注模擬視覺化 (BDD Simulation)](https://htmlpreview.github.io/?https://github.com/DD898989/SlotMachineDEMO/blob/dbbasic/test/ServerMain.BDDTests/Features/SlotopolSimulation.feature.html)
 
-### 2. 為什麼不使用 Redis？
+### 2. BDD 行為驅動測試（嚴格比對資料庫底層資料）
+- 採用 Gherkin 語法撰寫 BDD 測試，並整合自動化測試工具產出完整覆蓋率。
+- 測試不僅驗證 HTTP API 回傳，更於每一步驟直接連線 MySQL，精確比對資料庫底層資料（包含 Users 錢包餘額、ClubData 水池與彩金池、Spinlogs 注單明細、Multlogs 比倍紀錄），確保運算邏輯與資料庫實體狀態分毫不差。
+
+### 3. 為什麼不使用 Redis？
 - 老虎機核心業務在每次 Spin 下注時為標準的「1 讀 1 寫」（讀取玩家該局狀態與錢包 -> 運算 -> 寫回扣款與派彩結果）。
 - 缺乏傳統快取「讀多寫少」的複用場景，引入 Redis 僅會增加額外網路跳轉（Hop）與分散式雙寫一致性問題，無實質效益。
 
