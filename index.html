@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SlotMachineDEMO - 老虎機數學模型、調輪技術與視覺化導航中心</title>
+  <style>
+    :root {
+      --bg-body: #0b0f17;
+      --bg-card: #131b27;
+      --bg-card-hover: #192333;
+      --bg-card-sub: #1a2433;
+      --border-color: #27374d;
+      --border-color-hover: #3b82f6;
+      --accent-gold: #f59e0b;
+      --accent-gold-light: #fef08a;
+      --accent-cyan: #38bdf8;
+      --accent-green: #10b981;
+      --accent-purple: #c084fc;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-mono: "JetBrains Mono", Consolas, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-body);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      font-size: 15px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 36px 20px 60px 20px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Top Nav Bar */
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      font-weight: 800;
+      color: var(--accent-gold);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+
+    .brand:hover {
+      opacity: 0.9;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-links a.github-link {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-cyan);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .nav-links a.github-link:hover {
+      background: rgba(56, 189, 248, 0.2);
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+      padding: 20px 0;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-gold);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 780px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Section Headers */
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    /* Primary Cards Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 44px;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .doc-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .doc-card.gold-theme::before {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .doc-card.cyan-theme::before {
+      background: linear-gradient(90deg, #0284c7, #38bdf8);
+    }
+
+    .doc-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .doc-card.gold-theme:hover {
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    .doc-card.cyan-theme:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .doc-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .icon-gold {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .icon-cyan {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .card-desc {
+      color: #cbd5e1;
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.65;
+    }
+
+    /* Tag Pills */
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 22px;
+    }
+
+    .pill {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+
+    .pill-gold {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .pill-cyan {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+
+    /* CTA Button inside card */
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      margin-top: auto;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-cyan {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .btn-cyan:hover {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Secondary Grid (Visualizations) */
+    .sub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .sub-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sub-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .sub-card:hover {
+      background: var(--bg-card-hover);
+      border-color: #3b82f6;
+    }
+
+    .sub-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .sub-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      text-decoration: none;
+      transition: gap 0.2s ease;
+      align-self: flex-start;
+    }
+
+    .sub-btn:hover {
+      gap: 9px;
+      color: #7dd3fc;
+    }
+
+    /* Info Banner */
+    .info-banner {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .info-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .info-text strong {
+      color: #fff;
+    }
+
+    .info-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      margin-right: 6px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 24px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      background: #080b11;
+    }
+
+    footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Top Navigation -->
+    <nav class="nav-bar">
+      <a href="index.html" class="brand">
+        <span>🎰</span> SlotMachineDEMO
+      </a>
+      <div class="nav-links">
+        <a href="波動率說明.html">📊 波動率說明</a>
+        <a href="調輪說明.html">⚙️ 調輪說明</a>
+        <a href="https://github.com/DD898989/SlotMachineDEMO" target="_blank" rel="noopener noreferrer" class="github-link">
+          <span>📦</span> GitHub 專案倉庫
+        </a>
+      </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="hero">
+      <div class="hero-badge">線上文檔與視覺化導航中心</div>
+      <h1 class="hero-title">老虎機核心算法、數學模型與自動化測試</h1>
+      <p class="hero-desc">
+        收錄老虎機全空間派彩精算、RTP 與波動率指數（VI）推導、多檔位輪帶微調架構，以及 BDD 行為驅動測試全流程互動視覺化展示。
+      </p>
+    </header>
+
+    <!-- Main Section: 2 Core Docs -->
+    <div class="section-title">
+      <span>📖 核心技術說明文檔</span>
+      <span class="badge">必讀核心</span>
+    </div>
+
+    <div class="main-grid">
+
+      <!-- Card 1: 波動率說明 -->
+      <div class="doc-card gold-theme">
+        <div>
+          <div class="card-head">
+            <div class="card-icon icon-gold">📊</div>
+            <div>
+              <div class="card-title">波動率說明</div>
+              <div class="card-subtitle">Volatility Index &amp; 統計推導實務</div>
+            </div>
+          </div>
+
+          <p class="card-desc">
+            以經典 5×3 老虎機為例，深入剖析 <strong>5,072 萬種停輪全空間</strong>。由派彩一階和 ∑pᵢ 與二階和 ∑pᵢ² 逐步推導至方差、標準差（σ ≈ 6.1755）與 90% 信心區間 VI 指數（12.1038），並詳解其在賭場風控儲備金與 GLI 認證抽樣檢驗之實戰判定。
+          </p>
+
+          <div class="pill-list">
+            <span class="pill pill-gold">RTP 96.00%</span>
+            <span class="pill pill-gold">一階和 &amp; 二階和</span>
+            <span class="pill pill-gold">方差 Var(X) ≈ 32.81</span>
+            <span class="pill pill-gold">VI 指數 ≈ 12.1038</span>
+            <span class="pill">風控準備金</span>
+            <span class="pill">GLI 認證抽樣</span>
+          </div>
+        </div>
+
+        <a href="波動率說明.html" class="btn-action btn-gold">
+          閱讀「波動率說明」 <span>➔</span>
+        </a>
+      </div>
+
+      <!-- Card 2: 調輪說明 -->
+      <div class="doc-card cyan-theme">
+        <div>
+          <div class="card-head">
+            <div class="card-icon icon-cyan">⚙️</div>
+            <div>
+              <div class="card-title">調輪說明</div>
+              <div class="card-subtitle">Reel Strips Tuning &amp; 演算法尋優</div>
+            </div>
+          </div>
+
+          <p class="card-desc">
+            揭秘業界多檔位（如 90%~98%）輪帶設計核心哲學：為何通常<strong>固定第 1、2、4、5 輪，僅微調第 3 輪</strong>？解析「輪帶長度、百搭權重、Scatter 門檻、符號替換」4 大調控手法，並搭配遺傳演算法（GA）與 <code>calc_gonzo.go</code> 實現全空間秒級尋優收斂。
+          </p>
+
+          <div class="pill-list">
+            <span class="pill pill-cyan">固定其餘輪</span>
+            <span class="pill pill-cyan">僅微調第 3 輪</span>
+            <span class="pill pill-cyan">4 大精確調控手法</span>
+            <span class="pill pill-cyan">遺傳演算法 (GA)</span>
+            <span class="pill">calc_gonzo.go</span>
+            <span class="pill">秒級全空間收斂</span>
+          </div>
+        </div>
+
+        <a href="調輪說明.html" class="btn-action btn-cyan">
+          閱讀「調輪說明」 <span>➔</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Secondary Section: Interactive Visualizations -->
+    <div class="section-title">
+      <span>🎮 遊戲 BDD 全流程互動視覺化展示</span>
+      <span class="badge">線上互動</span>
+    </div>
+
+    <div class="sub-grid">
+
+      <!-- Viz Card 1 -->
+      <div class="sub-card">
+        <div>
+          <div class="sub-card-title">
+            <span>💎</span> Gonzo's Quest Avalanche 連鎖掉落滿貫階梯視覺化
+          </div>
+          <p class="sub-card-desc">
+            步進演示盤面連鎖消除（Cascade / Avalanche）、贏分線判定與階梯乘數機制，並直觀對照底層 C# 核心演算法實現與資料庫異動狀態。
+          </p>
+        </div>
+        <a href="test/ServerMain.BDDTests/Features/GonzosQuestAvalanche.feature.html" class="sub-btn">
+          開啟 Gonzo's Quest 視覺化 <span>➔</span>
+        </a>
+      </div>
+
+      <!-- Viz Card 2 -->
+      <div class="sub-card">
+        <div>
+          <div class="sub-card-title">
+            <span>🍒</span> MegaJack Slotopol 10 次指定下注模擬視覺化
+          </div>
+          <p class="sub-card-desc">
+            經典 21 線老虎機下注流程模擬，即時對照每一步驟底層 MySQL 資料庫實體狀態（Users 錢包、ClubData 水池、Spinlogs 注單明細）。
+          </p>
+        </div>
+        <a href="test/ServerMain.BDDTests/Features/SlotopolSimulation.feature.html" class="sub-btn">
+          開啟 Slotopol 模擬視覺化 <span>➔</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Architecture Overview Banner -->
+    <div class="info-banner">
+      <div class="info-text">
+        <span class="info-badge">架構亮點</span>
+        <strong>高效能壓測成果：</strong>
+        <code>dbbasic</code> (傳統 CRUD ~154 RPS) ➔
+        <code>reqcoalescing</code> (微批次聚合 ~3,198 RPS) ➔
+        <code>applicationcache</code> (記憶體快取 ~22,668 RPS)
+      </div>
+      <a href="https://github.com/DD898989/SlotMachineDEMO#readme" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); font-size: 13px; font-weight: 700; text-decoration: none;">
+        查看 README 架構說明 ➔
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>
+      SlotMachineDEMO · 改動自開源專案 <a href="https://github.com/slotopol/server" target="_blank" rel="noopener noreferrer">slotopol/server</a> ·
+      託管於 <a href="https://github.com/DD898989/SlotMachineDEMO" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>
