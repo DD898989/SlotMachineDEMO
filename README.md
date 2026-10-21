@@ -1,6 +1,7 @@
 # SlotMachineDEMO - 各分支架構與自動化測試指南
 
 本專案改動自開源專案 https://github.com/slotopol/server
+波動率 & 輪帶調整 介紹: https://htmlpreview.github.io/?https://github.com/DD898989/SlotMachineDEMO/blob/MD/index.html
 
 ---
 
